@@ -7,39 +7,36 @@ Hybrid Heston-Neural SDE framework for CSI 300 index options, with sentiment lat
 - **Risk Reversal Surface VAE**: Learn 2D sentiment latent $z$ from RR surfaces; implicit neural representation
 - **Hybrid Heston-Neural SDE**: 4 NNs parameterizing drift/diffusion; sentiment $z$ injected into dynamics
 - **Monte Carlo pricing**: Antithetic variates; validated on CSI 300 index options
-- **OptionDataFetcher**: Fetch option data & Greeks via RiceQuant (Miqiang) API
+
+## Pipeline (Stage 1 → 5)
+
+| Stage | Notebook | 说明 |
+|-------|----------|------|
+| 1 | `stage_1_vae_for_risk_reversal_sruface.ipynb` | RR Surface VAE 训练，输出 latent z |
+| 2 | `stage_2_heston.ipynb` | BS / Heston 基准 |
+| 3 | `stage_3_neural_networks.ipynb` | NN(MSE) / NN(自定义损失) baseline |
+| 4 | `stage_4_sentiment_integrated.ipynb` | NN + Sentiment 整合 |
+| 5 | `stage_5_nsde.ipynb` | NSDE + Sentiment 完整模型 |
+| 5.1 | `stage_5.1_nsde_no_sentiment.ipynb` | NSDE 无 Sentiment 对照 |
 
 ## Project Structure
 
 ```
-├── OptionDataFetcher.py      # Data fetching (RiceQuant)
 ├── RiskReversalSurfaceVAE.py # VAE for RR surface → latent z
 ├── NeuralSDEPricer.py        # Sentiment-integrated NSDE
 ├── NeuralSDEPricerNoSentiment.py
-├── OptionPricingModel.py      # Heston baseline, metrics
+├── OptionPricingModel.py     # Heston baseline, metrics
 ├── FlexibleMLP.py
 ├── OptionPricingReporter.py
 ├── VolatilitySurfaceVisualizer.py
-├── Notebooks/                 # Pipeline notebooks
-│   ├── stage_0_playground.ipynb
-│   ├── stage_1_vae_for_risk_reversal_sruface.ipynb
-│   ├── stage_2_heston.ipynb
-│   ├── stage_3_neural_networks.ipynb
-│   ├── stage_4_sentiment_integrated.ipynb
-│   ├── stage_5_nsde.ipynb
-│   └── stage_5.1_nsde_no_sentiment.ipynb
-├── examples/                 # Usage examples
-│   ├── example_usage.py      # OptionDataFetcher
+├── Notebooks/                 # Pipeline (stage 1–5)
+├── examples/
 │   ├── usage_example.py      # NeuralSDEPricer (MAPE, ATM IV)
 │   ├── example_visualizer_usage.py
-│   ├── prepare_sample_data.py
-│   └── test_contract.py
+│   └── prepare_sample_data.py
 ├── data/
-│   ├── sample/               # Sample data for quick run
-│   ├── train/                # Full train data (gitignored)
-│   └── test/                 # Full test data (gitignored)
+│   └── sample/               # 小样本 (train_2000, test_500)
 ├── requirements.txt
-├── .env.example
 └── README.md
 ```
 
@@ -47,34 +44,36 @@ Hybrid Heston-Neural SDE framework for CSI 300 index options, with sentiment lat
 
 ```bash
 pip install -r requirements.txt
-
-# RiceQuant API (for OptionDataFetcher)
-pip install rqdatac
-export RQDATAC_LICENSE='your_license_key'
-# Or copy .env.example to .env and fill in
 ```
+
+## Data（无需 API）
+
+将 `full_option_trading_data.csv` 放在项目根目录即可运行 pipeline。该文件格式：CSI 300 期权 2024 年数据，含 `underlying_close`, `strike_price`, `time_to_expire`, `risk_free_rate`, `close`, `hv_20d`, `call_put`, `iv` 等列。
+
+- 若已有该文件：直接运行 stage 1 → 5
+- 若无：可用 `examples/prepare_sample_data.py` 从 `data/train/` + `data/test/` 合并生成（需先有原始数据）
+
+## Key Results（CSI 300, 测试集 2412）
+
+| 模型 | MAE | RMSE | MAPE(%) |
+|------|-----|------|---------|
+| Heston | — | — | 基准 |
+| NN(MSE) | ~18.8 | ~31.8 | ~38 |
+| NN(自定义) | ~20.2 | ~35.2 | ~24 |
+| NN+Sentiment | ~20.6 | ~32.6 | ~48 (MSE) / ~24 (自定义) |
+| NSDE+Sentiment | 见 stage_5 输出 | | |
+
+Sentiment 在 NN(自定义) 上 MAPE 持平；NSDE 需完整训练后查看 metrics。
 
 ## Usage
 
-**Run from project root** so imports resolve correctly.
-
 ```python
-from OptionDataFetcher import OptionDataFetcher
 from NeuralSDEPricer import NeuralSDEPricer
-
-fetcher = OptionDataFetcher()
-fetcher.init_connection()  # reads RQDATAC_LICENSE from env
+from OptionPricingModel import compute_metrics
 
 model = NeuralSDEPricer(latent_dim=2, n_paths=5000, loss_type='mape')
-# ... see examples/usage_example.py
+# 见 examples/usage_example.py
 ```
-
-Or run notebooks in `Notebooks/` for the full pipeline (stage 0 → 5).
-
-## Data
-
-- **CSI 300 options**: Requires RiceQuant license; fetched via `OptionDataFetcher`
-- **Sample data**: `data/sample/` (train_2000_seed42.csv, test_500_seed42.csv) for quick runs without API
 
 ## References
 

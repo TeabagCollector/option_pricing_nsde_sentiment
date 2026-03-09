@@ -60,3 +60,6 @@ Version_9_paper_latex/*.bcf
 *.pkl
 *.pt
 plot_folder/
+
+# Stage 0：数据获取 playground（需 API，已忽略）
+Notebooks/stage_0_playground.ipynb
