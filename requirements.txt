@@ -1,0 +1,9 @@
+numpy
+scipy
+pandas
+torch
+tqdm
+matplotlib
+seaborn
+QuantLib-Python
+# rqdatac  # RiceQuant API - install separately: pip install rqdatac

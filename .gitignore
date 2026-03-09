@@ -1,0 +1,62 @@
+# 环境变量与敏感信息
+.env
+.env.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+*.egg-info/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 数据（完整数据不提交，仅保留 sample）
+data/train/
+data/test/
+full_option_trading_data.csv
+
+# 输出与实验结果
+outputs/
+results_loss_v0/
+hyperparameter_results/
+stage_4_3d_prev_day_output/
+nsde_experiment_results/
+
+# LaTeX 中间文件
+Version_9_paper_latex/
+Version_9_paper_latex/*.aux
+Version_9_paper_latex/*.bbl
+Version_9_paper_latex/*.blg
+Version_9_paper_latex/*.log
+Version_9_paper_latex/*.out
+Version_9_paper_latex/*.run.xml
+Version_9_paper_latex/*.bcf
+
+# 备份
+*.backup
+*.backup_*
+
+# 模型 checkpoint 与输出
+*.pkl
+*.pt
+plot_folder/
